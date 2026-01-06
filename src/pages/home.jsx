@@ -1,0 +1,226 @@
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import axios from "axios";
+import "./home.css";
+
+function Home() {
+  const [error, setError] = useState("");
+  const [paymentStatus, setPaymentStatus] = useState("");
+  const [pendingPayments, setPendingPayments] = useState([]);
+  const [loadingPayments, setLoadingPayments] = useState(false);
+  const [showPendingPayments, setShowPendingPayments] = useState(false);
+
+  const handlePaymentAction = async (pid, status) => {
+    setError("");
+    setPaymentStatus("");
+
+    try {
+      await axios.put(
+        `http://localhost:8088/payment/payNow?pid=${pid}&status=${status}`,
+        {},
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          }
+        }
+      );
+
+      setPaymentStatus(
+        status === "PAID" 
+          ? "Payment processed successfully!" 
+          : "Payment rejected successfully!"
+      );
+      
+      // Refresh pending payments list
+      setLoadingPayments(true);
+      await fetchPendingPayments();
+      setLoadingPayments(false);
+    } catch (err) {
+      setError(err.response?.data?.message || "Action failed. Please try again.");
+    }
+  };
+
+  const handleLogout = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    try {
+      await axios.post(
+        "http://localhost:8088/logout",
+        {},
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          }
+        }
+      );
+
+      window.location.href = "/login";
+    } catch (err) {
+      setError("Logout failed. Please try again.");
+    }
+  };
+
+  const fetchPendingPayments = async () => {
+    try {
+      // First, get the current user
+      const userResponse = await axios.get(
+        "http://localhost:8088/users/getcurruser",
+        {
+          withCredentials: true
+        }
+      );
+
+      const userId = userResponse.data?.id;
+      
+      if (!userId) {
+        setError("Unable to get user information");
+        return;
+      }
+
+      // Then, get pending payments for this user
+      const paymentsResponse = await axios.get(
+        `http://localhost:8088/payment/getPending?uid=${userId}`,
+        {
+          withCredentials: true
+        }
+      );
+
+      setPendingPayments(Array.isArray(paymentsResponse.data) ? paymentsResponse.data : []);
+      setError("");
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to load pending payments. Please try again.");
+      setPendingPayments([]);
+    }
+  };
+
+  const handleSeePendingPayments = async () => {
+    setError("");
+    setLoadingPayments(true);
+    setShowPendingPayments(true);
+
+    await fetchPendingPayments();
+    setLoadingPayments(false);
+  };
+
+  return (
+    <div className="home-container">
+      <div className="home-content">
+        <header className="home-header">
+          <h1>Welcome to SecureCard</h1>
+          <p className="home-subtitle">Your trusted digital payment and card management platform</p>
+        </header>
+
+        <nav className="home-nav">
+          <Link to="/cardform" className="nav-link">
+            Apply New Card
+          </Link>
+          <Link to="/cards/mycards" className="nav-link">
+            See My Cards
+          </Link>
+          <button 
+            onClick={handleSeePendingPayments}
+            className="nav-link nav-button"
+            disabled={loadingPayments}
+          >
+            {loadingPayments ? "Loading..." : "See Pending Payments"}
+          </button>
+        </nav>
+
+        {showPendingPayments ? (
+          <section className="pending-payments">
+            <h2>Pending Payments</h2>
+            
+            {error && <div className="error-message">{error}</div>}
+            {paymentStatus && <div className="success-message">{paymentStatus}</div>}
+
+            <div className="pending-payments-list">
+              {loadingPayments ? (
+                <div className="loading-payments">
+                  <div className="spinner-small"></div>
+                  <p>Loading pending payments...</p>
+                </div>
+              ) : pendingPayments.length === 0 ? (
+                <div className="no-pending-payments">
+                  <p>No pending payments found.</p>
+                </div>
+              ) : (
+                <div className="payments-list">
+                  {pendingPayments.map((payment, index) => (
+                    <div key={payment.pid || index} className="payment-item">
+                      <div className="payment-info">
+                        <p><strong>Order ID:</strong> {payment.orderId || `ORD${index + 1}`}</p>
+                        <p><strong>Amount:</strong> ₹{payment.amount || "N/A"}</p>
+                        <p><strong>Status:</strong> <span className="status-pending">PENDING</span></p>
+                        {payment.pid && <p><strong>Payment ID:</strong> {payment.pid}</p>}
+                      </div>
+                      <div className="payment-actions">
+                        <button 
+                          onClick={() => handlePaymentAction(payment.pid, "PAID")}
+                          className="pay-button"
+                        >
+                          Pay
+                        </button>
+                        <button 
+                          onClick={() => handlePaymentAction(payment.pid, "REJECTED")}
+                          className="reject-button"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+        ) : (
+          <section className="about-section">
+            <div className="about-card">
+              <h2>About SecureCard</h2>
+              <p className="about-description">
+                SecureCard is a comprehensive digital payment and card management platform designed 
+                to provide you with secure, convenient, and efficient financial services. Manage 
+                your cards, process payments, and track transactions all in one place.
+              </p>
+            </div>
+
+            <div className="features-grid">
+              <div className="feature-card">
+                <div className="feature-icon">💳</div>
+                <h3>Card Management</h3>
+                <p>Apply for new credit or debit cards and manage all your cards in one secure location.</p>
+              </div>
+
+              <div className="feature-card">
+                <div className="feature-icon">🔒</div>
+                <h3>Secure Payments</h3>
+                <p>Process payments safely with our encrypted payment gateway and secure card transactions.</p>
+              </div>
+
+              <div className="feature-card">
+                <div className="feature-icon">📊</div>
+                <h3>Payment Tracking</h3>
+                <p>View and manage all your pending payments with real-time status updates.</p>
+              </div>
+
+              <div className="feature-card">
+                <div className="feature-icon">🛡️</div>
+                <h3>Bank-Level Security</h3>
+                <p>Your financial data is protected with industry-standard encryption and security measures.</p>
+              </div>
+            </div>
+          </section>
+        )}
+
+        <form onSubmit={handleLogout} className="logout-form">
+          <button type="submit" className="logout-button">Logout</button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+export default Home;
