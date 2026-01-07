@@ -1,35 +1,35 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import Login from "./pages/login";
 import Register from "./pages/register";
 import Home from "./pages/home";
 import CardForm from "./pages/cardform";
 import Payment from "./pages/payment";
 import MyCards from "./pages/mycards";
+import OAuthCallback from "./pages/oauth-callback";
+import AuthGuard from "./pages/AuthGuard";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Default page */}
-        <Route path="/" element={<Login />} />
 
-        {/* Explicit login route */}
+        {/* Public */}
         <Route path="/login" element={<Login />} />
-
-        {/* Register route */}
         <Route path="/register" element={<Register />} />
+        <Route path="/oauth/callback" element={<OAuthCallback />} />
 
-        {/* Home route */}
-        <Route path="/home" element={<Home />} />
+        {/* Protected */}
+        <Route element={<AuthGuard />}>
+          <Route path="/home" element={<Home />} />
+          <Route path="/cardform" element={<CardForm />} />
+          <Route path="/payment" element={<Payment />} />
+          <Route path="/cards/mycards" element={<MyCards />} />
+        </Route>
 
-        {/* Card form route */}
-        <Route path="/cardform" element={<CardForm />} />
+        {/* Default */}
+        <Route path="*" element={<Login />} />
 
-        {/* Payment route */}
-        <Route path="/payment" element={<Payment />} />
-
-        {/* My Cards route */}
-        <Route path="/cards/mycards" element={<MyCards />} />
       </Routes>
     </BrowserRouter>
   );

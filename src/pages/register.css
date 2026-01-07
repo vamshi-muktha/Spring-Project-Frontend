@@ -88,18 +88,22 @@
   color: #9ca3af;
 }
 
-.register-form input[type="date"] {
-  color: #333;
+.input-error {
+  border-color: #dc3545 !important;
+  background-color: #fff5f5 !important;
 }
 
-.register-form input[type="date"]::-webkit-calendar-picker-indicator {
-  cursor: pointer;
-  opacity: 0.6;
-  transition: opacity 0.3s ease;
+.input-error:focus {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1) !important;
 }
 
-.register-form input[type="date"]::-webkit-calendar-picker-indicator:hover {
-  opacity: 1;
+.field-error {
+  display: block;
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 6px;
+  margin-left: 4px;
 }
 
 .register-button {
@@ -168,6 +172,7 @@
   gap: 10px;
   text-decoration: none;
   margin-bottom: 20px;
+  font-family: inherit;
 }
 
 .google-button:hover {

@@ -9,9 +9,11 @@ function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError("");
 
     try {
-      await axios.post(
+      // First, attempt login
+      const response = await axios.post(
         "http://localhost:8088/login",
         new URLSearchParams({
           username,
@@ -21,14 +23,81 @@ function Login() {
           withCredentials: true,
           headers: {
             "Content-Type": "application/x-www-form-urlencoded"
+          },
+          validateStatus: function (status) {
+            // Accept all status codes to handle redirects manually
+            return status >= 200 && status < 600;
           }
         }
       );
 
-      window.location.href = "/home";
+      console.log("Login response status:", response.status);
+      console.log("Login response URL:", response.request?.responseURL);
+      console.log("Login response headers:", response.headers);
+
+      // Check the final URL after redirects
+      const finalUrl = response.request?.responseURL || "";
+      
+      // If redirected to login page with error parameter, login failed
+      if (finalUrl.includes("/login") && (finalUrl.includes("error") || finalUrl.includes("?error"))) {
+        setError("Invalid username or password");
+        return;
+      }
+
+      // Check response status
+      if (response.status === 401 || response.status === 403) {
+        setError("Invalid username or password");
+        return;
+      }
+
+      // Verify login by checking if user is authenticated
+      // Make a request to get current user to verify authentication
+      try {
+        const userCheck = await axios.get(
+          "http://localhost:8088/users/getcurruser",
+          {
+            withCredentials: true,
+            validateStatus: function (status) {
+              return status >= 200 && status < 600;
+            }
+          }
+        );
+
+        // If we can get user info, login was successful
+        if (userCheck.status === 200 && userCheck.data) {
+          console.log("Login successful, user:", userCheck.data);
+          window.location.href = "/home";
+        } else {
+          setError("Invalid username or password");
+        }
+      } catch (verifyErr) {
+        // If we can't get user info, login failed
+        console.error("User verification failed:", verifyErr);
+        setError("Invalid username or password");
+      }
 
     } catch (err) {
-      setError("Invalid username or password");
+      console.error("Login error:", err);
+      console.error("Error response:", err.response);
+      
+      // Network error
+      if (!err.response) {
+        setError("Network error. Please check if the backend server is running.");
+        return;
+      }
+
+      // Check error response
+      if (err.response.status === 401 || err.response.status === 403) {
+        setError("Invalid username or password");
+      } else {
+        // For redirects, check the location header
+        const location = err.response.headers?.location || "";
+        if (location.includes("error") || location.includes("login?error")) {
+          setError("Invalid username or password");
+        } else {
+          setError(err.response?.data?.message || "Login failed. Please try again.");
+        }
+      }
     }
   };
 
