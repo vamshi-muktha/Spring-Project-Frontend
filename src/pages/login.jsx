@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import "./login.css";
 
@@ -41,12 +42,16 @@ function Login() {
       // If redirected to login page with error parameter, login failed
       if (finalUrl.includes("/login") && (finalUrl.includes("error") || finalUrl.includes("?error"))) {
         setError("Invalid username or password");
+        setUsername(""); 
+        setPassword("");
         return;
       }
 
       // Check response status
       if (response.status === 401 || response.status === 403) {
         setError("Invalid username or password");
+        setUsername(""); 
+        setPassword("");
         return;
       }
 
@@ -104,7 +109,9 @@ function Login() {
   return (
     <div className="login-container">
       <form className="login-form" onSubmit={handleLogin}>
-        <h2>Login</h2>
+        {/* <h3>Login</h3>  */}
+        {/* <button onclick="register()">Register</button> */}
+     
 
         {error && <div className="error-message">{error}</div>}
 
@@ -128,6 +135,10 @@ function Login() {
         <button type="submit" className="login-button">Login</button>
 
         <div className="divider">or</div>
+
+        <Link to="/register">
+          <button type="button" className="register-button">Register</button>
+        </Link>
 
         <a href="http://localhost:8088/oauth2/authorization/google" className="google-button">
           <svg className="google-icon" viewBox="0 0 24 24">
