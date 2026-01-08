@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import "./home.css";
@@ -9,14 +9,27 @@ function Home() {
   const [pendingPayments, setPendingPayments] = useState([]);
   const [loadingPayments, setLoadingPayments] = useState(false);
   const [showPendingPayments, setShowPendingPayments] = useState(false);
+  const [activeCards, setActiveCards] = useState([]);
+  const [selectedCards, setSelectedCards] = useState({}); // Track selected card for each payment
 
-  const handlePaymentAction = async (pid, status) => {
+  const handlePaymentAction = async (pid, status, cid = null) => {
     setError("");
     setPaymentStatus("");
 
+    // For PAID status, require a card to be selected
+    if (status === "PAID" && !cid) {
+      setError("Please select a card before making payment.");
+      return;
+    }
+
     try {
-      await axios.put(
-        `http://localhost:8088/payment/payNow?pid=${pid}&status=${status}`,
+      let url = `http://localhost:8088/payment/payNow?pid=${pid}&status=${status}`;
+      if (cid) {
+        url += `&cid=${cid}`;
+      }
+
+      const ress = await axios.put(
+        url,
         {},
         {
           withCredentials: true,
@@ -25,7 +38,7 @@ function Home() {
           }
         }
       );
-
+      console.log("ress", ress.data);
       setPaymentStatus(
         status === "PAID" 
           ? "Payment processed successfully!" 
@@ -40,6 +53,30 @@ function Home() {
       setError(err.response?.data?.message || "Action failed. Please try again.");
     }
   };
+
+  const handleCardSelection = (pid, cid) => {
+    setSelectedCards(prev => ({
+      ...prev,
+      [pid]: cid
+    }));
+  };
+
+  const fetchActiveCards = async () => {
+    try {
+      const response = await axios.get("http://localhost:8088/cards/activeCards", {
+        withCredentials: true
+      });
+      setActiveCards(response.data);
+      console.log("active-cards", response.data);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to fetch active cards. Please try again.");
+    }
+  };
+
+  useEffect(() => {
+    fetchActiveCards();
+  }, []);
+
 
   const handleLogout = async (e) => {
     e.preventDefault();
@@ -156,20 +193,21 @@ function Home() {
                         <p><strong>Status:</strong> <span className="status-pending">PENDING</span></p>
                         {payment.pid && <p><strong>Payment ID:</strong> {payment.pid}</p>}
                       </div>
-                      <div className="payment-actions">
-                        <button 
-                          onClick={() => handlePaymentAction(payment.pid, "PAID")}
-                          className="pay-button"
-                        >
-                          Pay
-                        </button>
-                        <button 
-                          onClick={() => handlePaymentAction(payment.pid, "REJECTED")}
-                          className="reject-button"
-                        >
-                          Reject
-                        </button>
-                      </div>
+                      pay using : 
+                      <select 
+                        name={`card-${payment.pid || index}`} 
+                        id={`card-${payment.pid || index}`}
+                        value={selectedCards[payment.pid] || ""}
+                        onChange={(e) => handleCardSelection(payment.pid, e.target.value)}
+                      >
+                        <option value="">Select a card</option>
+                        {activeCards.map((card) => (
+                          <option key={card.cid} value={card.cid}>{card.cardNumber}</option>
+                        ))}
+                      </select>
+                      <button onClick={() => handlePaymentAction(payment.pid, "PAID", selectedCards[payment.pid])}>Pay</button>
+                      <button onClick={() => handlePaymentAction(payment.pid, "REJECTED")}>Reject</button>
+                      
                     </div>
                   ))}
                 </div>

@@ -47,7 +47,7 @@
   background: rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
+  /* backdrop-filter: blur(10px); */
 }
 
 .back-button:hover {
@@ -168,6 +168,15 @@
 .card-item:hover {
   transform: translateY(-5px);
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+}
+
+.toggle-button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .card-header {

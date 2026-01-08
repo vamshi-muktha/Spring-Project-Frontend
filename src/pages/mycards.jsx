@@ -99,6 +99,16 @@ function MyCards() {
       </div>
     );
   }
+  const handleToggleStatus = async (cid) => {
+    try {
+      await axios.put(`http://localhost:8088/cards/changeStatus/${cid}`, {}, {
+        withCredentials: true
+      });
+      fetchCards();
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to toggle card status. Please try again.");
+    }
+  };
 
   return (
     <div className="mycards-container">
@@ -134,8 +144,9 @@ function MyCards() {
                     {card.cardType || "Card"}
                   </div>
                   <div className={`card-status ${card.active ? "active" : "inactive"}`}>
-                    {card.active ? "✓ Active" : "○ Inactive"}
+                    {card.active ? "✓ Active" : "○ Inactive"} <button className="toggle-button" onClick={() => {handleToggleStatus(card.cid);}}>Toggle</button>
                   </div>
+                  
                 </div>
 
                 <div className="card-body">
