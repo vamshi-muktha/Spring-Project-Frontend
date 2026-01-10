@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { getApiUrl } from "../config/api";
 import "./home.css";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 function Home() {
   const [error, setError] = useState("");
@@ -33,7 +35,7 @@ function Home() {
 
   
 
-  const handlePaymentAction = async (pid, status, cid = null) => {
+  const handlePaymentAction = async (pid,amt, status, cid = null) => {
     setError("");
     setPaymentStatus("");
 
@@ -44,7 +46,7 @@ function Home() {
     }
 
     try {
-      let url = `${getApiUrl("/payment/payNow")}?pid=${pid}&status=${status}`;
+      let url = `${getApiUrl("/payment/payNow")}?pid=${pid}&status=${status}&amt=${amt}`;
       if (cid) {
         url += `&cid=${cid}`;
       }
@@ -60,6 +62,10 @@ function Home() {
         }
       );
       console.log("ress", ress.data);
+      if(ress.data === "Amount low in that card try with another card"){
+        setError(ress.data);
+        return;
+      }
       setPaymentStatus(
         status === "PAID" 
           ? "Payment processed successfully!" 
@@ -99,27 +105,27 @@ function Home() {
   }, []);
 
 
-  const handleLogout = async (e) => {
-    e.preventDefault();
-    setError("");
+  // const handleLogout = async (e) => {
+  //   e.preventDefault();
+  //   setError("");
 
-    try {
-      await axios.post(
-        getApiUrl("/logout"),
-        {},
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-          }
-        }
-      );
+  //   try {
+  //     await axios.post(
+  //       getApiUrl("/logout"),
+  //       {},
+  //       {
+  //         withCredentials: true,
+  //         headers: {
+  //           "Content-Type": "application/x-www-form-urlencoded"
+  //         }
+  //       }
+  //     );
 
-      window.location.href = "/login";
-    } catch (err) {
-      setError("Logout failed. Please try again.");
-    }
-  };
+  //     window.location.href = "/login";
+  //   } catch (err) {
+  //     setError("Logout failed. Please try again.");
+  //   }
+  // };
 
   const fetchPendingPayments = async () => {
     try {
@@ -165,6 +171,7 @@ function Home() {
 
   return (
     <div className="home-container">
+      <Navbar/>
       <div className="home-content">
         <header className="home-header">
           <h1>Welcome to SecureCard</h1>
@@ -215,12 +222,25 @@ function Home() {
                     <div key={payment.pid || index} className="payment-item">
                       <div className="payment-info">
                         <p><strong>Order ID:</strong> {payment.orderId || `ORD${index + 1}`}</p>
-                        <p><strong>Amount:</strong> ₹{payment.amount || "N/A"}</p>
+                        <p>
+                          <strong>Amount:</strong>{" "}
+                          <span style={{ textDecoration: "line-through", color: "#888" }}>
+                            ₹{parseInt(payment.amount) || "N/A"}
+                          </span>
+                          {"  "}
+                          <span style={{ color: "#28a745", fontWeight: "bold", marginLeft: "8px" }}>
+                            ₹{payment.amount ? parseInt(payment.amount * 0.9) : "N/A"}
+                          </span>
+                          <br />
+                          <small style={{ color: "#ff5722" }}>
+                            🎉 10% OFF for using Secure Card
+                          </small>
+                        </p>
+
                         <p><strong>Status:</strong> <span className="status-pending">PENDING</span></p>
                         {payment.pid && <p><strong>Payment ID:</strong> {payment.pid}</p>}
-                      </div>
-                      pay using : 
-                      <select 
+                        <p><strong>pay using : </strong>
+                        <select 
                         name={`card-${payment.pid || index}`} 
                         id={`card-${payment.pid || index}`}
                         value={selectedCards[payment.pid] || ""}
@@ -231,9 +251,12 @@ function Home() {
                           <option key={card.cid} value={card.cid}>{card.cardNumber}</option>
                         ))}
                       </select>
-                      <button onClick={() => handlePaymentAction(payment.pid, "PAID", selectedCards[payment.pid])}>Pay</button>
-                      <button onClick={() => handlePaymentAction(payment.pid, "REJECTED")}>Reject</button>
+                      </p>
+                      <button className= "payment-button-success" onClick={() => handlePaymentAction(payment.pid,parseInt(payment.amount * 0.9), "PAID", selectedCards[payment.pid])}>Pay</button>
+                      <button className= "payment-button-danger" onClick={() => handlePaymentAction(payment.pid,parseInt(payment.amount * 0.9), "REJECTED")}>Reject</button>
                       
+                      </div>
+                     
                     </div>
                   ))}
                 </div>
@@ -279,10 +302,11 @@ function Home() {
           </section>
         )}
 
-        <form onSubmit={handleLogout} className="logout-form">
+        {/* <form onSubmit={handleLogout} className="logout-form">
           <button type="submit" className="logout-button">Logout</button>
-        </form>
+        </form> */}
       </div>
+      <Footer/>
     </div>
   );
 }

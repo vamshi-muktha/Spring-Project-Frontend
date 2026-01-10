@@ -187,6 +187,44 @@
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
 }
 
+.clickable-card {
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.clickable-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.card-footer-simple {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: auto;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card-type-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.click-hint {
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.9;
+  font-style: italic;
+  padding-top: 5px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
 .toggle-button {
   background: none;
   border: none;
@@ -299,6 +337,51 @@
 
 .info-value {
   font-weight: 600;
+}
+
+.card-action-row {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.add-money-btn,
+.pay-bill-btn {
+  width: 100%;
+  padding: 12px;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.add-money-btn {
+  background: rgba(76, 175, 80, 0.9);
+}
+
+.add-money-btn:hover {
+  background: rgba(76, 175, 80, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4);
+}
+
+.pay-bill-btn {
+  background: rgba(255, 152, 0, 0.9);
+}
+
+.pay-bill-btn:hover {
+  background: rgba(255, 152, 0, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(255, 152, 0, 0.4);
+}
+
+.amount-payable {
+  color: #ff9800;
+  font-weight: 700;
+  font-size: 16px;
 }
 
 .actions-section {

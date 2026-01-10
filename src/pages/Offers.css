@@ -1,0 +1,105 @@
+/* Offers Section */
+.offers-container {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 25px;
+    animation: fadeInUp 0.5s ease-out;
+    padding: 20px;
+  }
+
+  .offers-header{
+    padding-left: 100px;
+  }
+
+  .offers-container-inner {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 25px;
+    padding-left: 100px;
+    padding-right: 100px;
+    animation: fadeInUp 0.5s ease-out;
+  }
+  
+  /* Offer Card */
+  .offer-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    padding: 40px;
+    position: relative;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+    transition: all 0.3s ease;
+    color: white;
+  }
+  
+  .offer-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+  }
+  
+  /* Discount Badge */
+  .offer-badge {
+    position: absolute;
+    top: -12px;
+    right: 20px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Title */
+  .offer-title {
+    margin-top: 20px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #333;
+  }
+  
+  /* Description */
+  .offer-description {
+    margin: 15px 0;
+    color: #130e0e;
+    line-height: 1.6;
+    font-size: 15px;
+  }
+  
+  /* Offer Code */
+  .offer-code {
+    background: rgba(102, 126, 234, 0.1);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-bottom: 20px;
+    color: #130e0e;
+  }
+  
+  .offer-code span {
+    font-weight: 700;
+    color: #e6e8f4;
+  }
+  
+  /* Apply Button */
+  .offer-button {
+    width: 100%;
+    padding: 12px 20px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .offer-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+  }
+  .offers-footer{
+    padding-left: 100px;
+  }
+  

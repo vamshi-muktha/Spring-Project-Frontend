@@ -401,3 +401,29 @@
     padding: 25px 20px;
   }
 }
+
+.payment-button-success {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid #9f8789;
+  background-color: #069f4b;
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.payment-button-danger {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid #cdb8ba;
+  background-color: #dc3545;
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}

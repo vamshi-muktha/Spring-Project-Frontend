@@ -3,6 +3,8 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { getApiUrl } from "../config/api";
 import "./cardform.css";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 function CardForm() {
   const [formData, setFormData] = useState({
@@ -159,6 +161,7 @@ function CardForm() {
 
   return (
     <div className="cardform-container">
+      <Navbar/>
       <form className="cardform-form" onSubmit={handleSubmit}>
         <h2>Card Application Form</h2>
 
@@ -248,6 +251,7 @@ function CardForm() {
           <Link to="/home">← Back to Home</Link>
         </div>
       </form>
+      <Footer/>
     </div>
   );
 }

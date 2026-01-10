@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { getApiUrl } from "../config/api";
 import "./AdminHome.css";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 function AdminHome() {
   const [activeTab, setActiveTab] = useState("users"); // "users" or "requests"
@@ -225,6 +227,7 @@ function AdminHome() {
 
   return (
     <div className="admin-home-container">
+      <Navbar/>
       <div className="admin-home-content">
         <header className="admin-header">
           <h1>Admin Dashboard</h1>
@@ -454,6 +457,9 @@ function AdminHome() {
           </div>
         )}
       </div>
+      <br/>
+      <br/>
+      <Footer/>
     </div>
   );
 }

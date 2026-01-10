@@ -1,14 +1,17 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getApiUrl } from "../config/api";
 import ben10Image from "../assets/ben10.png";
 import "./mycards.css";
+import Footer from "../components/Footer";
+import Navbar from "../components/Navbar";
 
 function MyCards() {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchCards();
@@ -103,19 +106,14 @@ function MyCards() {
       </div>
     );
   }
-  const handleToggleStatus = async (cid) => {
-    try {
-      await axios.put(getApiUrl(`/cards/changeStatus/${cid}`), {}, {
-        withCredentials: true
-      });
-      fetchCards();
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to toggle card status. Please try again.");
-    }
+  const handleCardClick = (cid) => {
+    navigate(`/card-detail?cid=${cid}`);
   };
 
   return (
     <div className="mycards-container">
+      <Navbar/>
+      <br></br>
       <div className="mycards-content">
         <header className="mycards-header">
           <h1>My Cards</h1>
@@ -138,19 +136,19 @@ function MyCards() {
             {cards.map((card, index) => (
               <div 
                 key={card.cid || index} 
-                className="card-item"
+                className="card-item clickable-card"
                 style={{
                   background: getCardTypeGradient(card.cardType, card.type)
                 }}
+                onClick={() => handleCardClick(card.cid)}
               >
                 <div className="card-header">
                   <div className="card-type-badge">
                     {card.cardType || "Card"}
                   </div>
                   <div className={`card-status ${card.active ? "active" : "inactive"}`}>
-                    {card.active ? "✓ Active" : "○ Inactive"} <button className="toggle-button" onClick={() => {handleToggleStatus(card.cid);}}>Toggle</button>
+                    {card.active ? "✓ Active" : "○ Inactive"}
                   </div>
-                  
                 </div>
 
                 <div className="card-body">
@@ -168,23 +166,12 @@ function MyCards() {
                   </div>
                 </div>
 
-                <div className="card-footer">
-                  <div className="card-info-row">
+                <div className="card-footer-simple">
+                  <div className="card-type-info">
                     <span className="info-label">Type:</span>
                     <span className="info-value">{card.type || "N/A"}</span>
                   </div>
-                  <div className="card-info-row">
-                    <span className="info-label">PAN:</span>
-                    <span className="info-value">{card.PAN || "N/A"}</span>
-                  </div>
-                  <div className="card-info-row">
-                    <span className="info-label">Monthly Income:</span>
-                    <span className="info-value">₹{card.monthlyIncome || "N/A"}</span>
-                  </div>
-                  <div className="card-info-row">
-                    <span className="info-label">Employment:</span>
-                    <span className="info-value">{card.empStatus || "N/A"}</span>
-                  </div>
+                  <div className="click-hint">Click to view details →</div>
                 </div>
               </div>
             ))}
@@ -197,6 +184,7 @@ function MyCards() {
           </Link>
         </div>
       </div>
+      <Footer/>
     </div>
   );
 }
