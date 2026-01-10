@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { getApiUrl } from "../config/api";
 import "./home.css";
 
 function Home() {
@@ -10,7 +11,27 @@ function Home() {
   const [loadingPayments, setLoadingPayments] = useState(false);
   const [showPendingPayments, setShowPendingPayments] = useState(false);
   const [activeCards, setActiveCards] = useState([]);
-  const [selectedCards, setSelectedCards] = useState({}); // Track selected card for each payment
+  const [selectedCards, setSelectedCards] = useState({});
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get(getApiUrl("/users/getcurruser"), {
+          withCredentials: true
+        });
+        setUser(response.data);
+        console.log("Current user", response.data);
+        console.log("User role", response.data?.role); // Log from response.data, not from state
+      } catch (err) {
+        console.error("Failed to fetch user:", err);
+        setError("Failed to load user information");
+      }
+    };
+    fetchUser();
+  }, []);
+
+  
 
   const handlePaymentAction = async (pid, status, cid = null) => {
     setError("");
@@ -23,7 +44,7 @@ function Home() {
     }
 
     try {
-      let url = `http://localhost:8088/payment/payNow?pid=${pid}&status=${status}`;
+      let url = `${getApiUrl("/payment/payNow")}?pid=${pid}&status=${status}`;
       if (cid) {
         url += `&cid=${cid}`;
       }
@@ -63,7 +84,7 @@ function Home() {
 
   const fetchActiveCards = async () => {
     try {
-      const response = await axios.get("http://localhost:8088/cards/activeCards", {
+      const response = await axios.get(getApiUrl("/cards/activeCards"), {
         withCredentials: true
       });
       setActiveCards(response.data);
@@ -84,7 +105,7 @@ function Home() {
 
     try {
       await axios.post(
-        "http://localhost:8088/logout",
+        getApiUrl("/logout"),
         {},
         {
           withCredentials: true,
@@ -104,7 +125,7 @@ function Home() {
     try {
       // First, get the current user
       const userResponse = await axios.get(
-        "http://localhost:8088/users/getcurruser",
+        getApiUrl("/users/getcurruser"),
         {
           withCredentials: true
         }
@@ -119,7 +140,7 @@ function Home() {
 
       // Then, get pending payments for this user
       const paymentsResponse = await axios.get(
-        `http://localhost:8088/payment/getPending?uid=${userId}`,
+        `${getApiUrl("/payment/getPending")}?uid=${userId}`,
         {
           withCredentials: true
         }
@@ -149,8 +170,13 @@ function Home() {
           <h1>Welcome to SecureCard</h1>
           <p className="home-subtitle">Your trusted digital payment and card management platform</p>
         </header>
-
+        
         <nav className="home-nav">
+        {user && user.role === "ADMIN" &&
+          <Link to="/adminhome" className="nav-link">
+            Admin Dashboard
+          </Link>
+        }
           <Link to="/cardform" className="nav-link">
             Apply New Card
           </Link>

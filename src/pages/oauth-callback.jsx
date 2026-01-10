@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { getApiUrl } from "../config/api";
 
 function OAuthCallback() {
   const navigate = useNavigate();
@@ -10,7 +11,7 @@ function OAuthCallback() {
       try {
         // Verify that user is authenticated after OAuth
         const response = await axios.get(
-          "http://localhost:8088/users/getcurruser",
+          getApiUrl("/users/getcurruser"),
           {
             withCredentials: true,
             validateStatus: function (status) {

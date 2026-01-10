@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { getApiUrl } from "../config/api";
 import "./cardform.css";
 
 function CardForm() {
@@ -93,7 +94,7 @@ function CardForm() {
       });
 
       const response = await axios.post(
-        "http://localhost:8088/applyCard",
+        getApiUrl("/applyCard"),
         formParams,
         {
           withCredentials: true,

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Navigate, Outlet } from "react-router-dom";
+import { getApiUrl } from "../config/api";
 
 const AuthGuard = () => {
   const [loading, setLoading] = useState(true);
@@ -48,7 +49,7 @@ const AuthGuard = () => {
 //   }, []);
 
 useEffect(() => {
-    axios.get("http://localhost:8088/users/getcurruser", {
+    axios.get(getApiUrl("/users/getcurruser"), {
       withCredentials: true
     })
     .then(() => {

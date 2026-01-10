@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import axios from "axios";
+import { getApiUrl } from "../config/api";
 import "./payment.css";
 
 function Payment() {
@@ -29,7 +30,7 @@ function Payment() {
 
     try {
       let res =await axios.post(
-        "http://localhost:8088/payment",
+        getApiUrl("/payment"),
         new URLSearchParams({
           orderId: orderId,
           amount: amount

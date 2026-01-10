@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { getApiUrl } from "../config/api";
 import "./register.css";
 
 function Register() {
@@ -158,7 +159,7 @@ function Register() {
 
     try {
       await axios.post(
-        "http://localhost:8088/register",
+        getApiUrl("/register"),
         new URLSearchParams({
           name: formData.name.trim(),
           username: formData.username.trim(),
@@ -321,7 +322,7 @@ function Register() {
           }}
         > */}
           <button  onClick={() => {
-    window.location.href = "http://localhost:8088/oauth2/authorization/google";
+    window.location.href = getApiUrl("/oauth2/authorization/google");
   }} type="submit" className="google-button">
             <svg className="google-icon" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>

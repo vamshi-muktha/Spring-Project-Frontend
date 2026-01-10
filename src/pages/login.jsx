@@ -1,12 +1,58 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { getApiUrl } from "../config/api";
 import "./login.css";
 
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [zipProgress, setZipProgress] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const updateZipProgress = (e) => {
+    const zipTrack = document.querySelector('.zip-track');
+    if (zipTrack) {
+      const rect = zipTrack.getBoundingClientRect();
+      const y = e.clientY - rect.top;
+      const percentage = Math.max(0, Math.min(100, (y / rect.height) * 100));
+      setZipProgress(percentage);
+    }
+  };
+
+  const handleZipMouseDown = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+    updateZipProgress(e);
+  };
+
+  const handleZipTrackClick = (e) => {
+    if (e.target.closest('.zip-slider')) return;
+    updateZipProgress(e);
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (isDragging) {
+        updateZipProgress(e);
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -15,7 +61,7 @@ function Login() {
     try {
       // First, attempt login
       const response = await axios.post(
-        "http://localhost:8088/login",
+        getApiUrl("/login"),
         new URLSearchParams({
           username,
           password
@@ -59,7 +105,7 @@ function Login() {
       // Make a request to get current user to verify authentication
       try {
         const userCheck = await axios.get(
-          "http://localhost:8088/users/getcurruser",
+          getApiUrl("/users/getcurruser"),
           {
             withCredentials: true,
             validateStatus: function (status) {
@@ -108,7 +154,16 @@ function Login() {
 
   return (
     <div className="login-container">
-      <form className="login-form" onSubmit={handleLogin}>
+      <div className="login-form-container">
+        <div 
+          className="login-form-wrapper"
+          style={{ 
+            transform: `scale(${0.3 + (zipProgress / 100) * 0.7})`,
+            opacity: zipProgress > 10 ? Math.min(1, (zipProgress - 10) / 30) : 0,
+            filter: `blur(${Math.max(0, 10 - (zipProgress / 10))}px)`
+          }}
+        >
+          <form className="login-form" onSubmit={handleLogin}>
         {/* <h3>Login</h3>  */}
         {/* <button onclick="register()">Register</button> */}
      
@@ -140,7 +195,7 @@ function Login() {
           <button type="button" className="register-button">Register</button>
         </Link>
 
-        <a href="http://localhost:8088/oauth2/authorization/google" className="google-button">
+        <a href={getApiUrl("/oauth2/authorization/google")} className="google-button">
           <svg className="google-icon" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -150,6 +205,42 @@ function Login() {
           Login with Google
         </a>
       </form>
+        </div>
+
+        <div className="zip-container">
+          <div className="zip-track" onClick={handleZipTrackClick}>
+            
+            <div className="zip-slider-wrapper">
+              <div 
+                className="zip-slider"
+                style={{ top: `${zipProgress}%` }}
+                onMouseDown={handleZipMouseDown}
+              >
+                <div className="zip-pull-tab">⛓</div>
+              </div>
+            </div>
+            <div className="zip-teeth">
+              {Array.from({ length: 30 }).map((_, i) => (
+                <div key={i} className="zip-tooth" style={{ top: `${i * 3.33}%` }} />
+              ))}
+            </div>
+            <div 
+              className="zip-split-left"
+              style={{ 
+                transform: `translateX(${-zipProgress * 0.5}px)`,
+                opacity: Math.max(0, 1 - (zipProgress / 50))
+              }}
+            />
+            <div 
+              className="zip-split-right"
+              style={{ 
+                transform: `translateX(${zipProgress * 0.5}px)`,
+                opacity: Math.max(0, 1 - (zipProgress / 50))
+              }}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

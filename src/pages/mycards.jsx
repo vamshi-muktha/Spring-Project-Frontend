@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { getApiUrl } from "../config/api";
+import ben10Image from "../assets/ben10.png";
 import "./mycards.css";
 
 function MyCards() {
@@ -10,13 +12,15 @@ function MyCards() {
 
   useEffect(() => {
     fetchCards();
+    // Set CSS variable for Ben 10 background image
+    document.documentElement.style.setProperty('--ben10-image', `url(${ben10Image})`);
   }, []);
 
   const fetchCards = async () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        "http://localhost:8088/cards/mycards",
+        getApiUrl("/cards/mycards"),
         {
           withCredentials: true
         }
@@ -101,7 +105,7 @@ function MyCards() {
   }
   const handleToggleStatus = async (cid) => {
     try {
-      await axios.put(`http://localhost:8088/cards/changeStatus/${cid}`, {}, {
+      await axios.put(getApiUrl(`/cards/changeStatus/${cid}`), {}, {
         withCredentials: true
       });
       fetchCards();
