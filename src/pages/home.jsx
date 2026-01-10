@@ -266,8 +266,12 @@ function Home() {
         ) : (
           <section className="about-section">
             <div className="about-card">
-              <h2>About SecureCard</h2>
-              <p className="about-description">
+            <h2 style={{ color: "#ebedf8" }}>
+  About SecureCard
+</h2>
+
+
+              <p style={{ color: "#ebedf8" }} className="about-description">
                 SecureCard is a comprehensive digital payment and card management platform designed 
                 to provide you with secure, convenient, and efficient financial services. Manage 
                 your cards, process payments, and track transactions all in one place.

@@ -52,8 +52,9 @@
 }
 
 .nav-link {
-  background: white;
-  color: #667eea;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+
+  color: #ebedf8;
   padding: 14px 28px;
   border-radius: 8px;
   text-decoration: none;
@@ -271,11 +272,13 @@
 }
 
 .about-section {
+  
   margin-bottom: 30px;
 }
 
 .about-card {
-  background: white;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+
   padding: 40px;
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -285,7 +288,7 @@
 
 .about-card h2 {
   margin: 0 0 20px 0;
-  color: #333;
+  color:  #ebedf8;
   font-size: 28px;
   font-weight: 600;
 }
