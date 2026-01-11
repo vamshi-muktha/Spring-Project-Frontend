@@ -44,12 +44,18 @@ function Home() {
       setError("Please select a card before making payment.");
       return;
     }
+    if(status === "REJECTED"){
+      window.alert("Payment rejected successfully!");
+    }
 
     try {
       let url = `${getApiUrl("/payment/payNow")}?pid=${pid}&status=${status}&amt=${amt}`;
-      if (cid) {
+      if (cid !== null && cid !== undefined) {
         url += `&cid=${cid}`;
-      }
+    } else {
+        url += `&cid=-1`;
+    }
+    
 
       const ress = await axios.put(
         url,
@@ -66,11 +72,24 @@ function Home() {
         setError(ress.data);
         return;
       }
-      setPaymentStatus(
-        status === "PAID" 
-          ? "Payment processed successfully!" 
-          : "Payment rejected successfully!"
-      );
+      if (ress.data === "OTP_REQUIRED") {
+
+        if (!user || !user.email) {
+          setError("User details not loaded. Please try again.");
+          return;
+        }
+      
+        window.location.href =
+          `/otp?pid=${pid}&amount=${amt}&cid=${cid}&email=${encodeURIComponent(user.email)}&status=${status}`;
+      
+        return;
+      }
+       
+      // setPaymentStatus(
+      //   status === "PAID" 
+      //     ? "Payment processed successfully!" 
+      //     : "Payment rejected successfully!"
+      // );
       
       // Refresh pending payments list
       setLoadingPayments(true);

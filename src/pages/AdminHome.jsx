@@ -12,15 +12,25 @@ function AdminHome() {
   const [userCards, setUserCards] = useState({}); // Store cards for each user
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [loadingRequests, setLoadingRequests] = useState(true);
+  const [loadingQueries, setLoadingQueries] = useState(true);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-
+  const [expandedMail, setExpandedMail] = useState({});
   const [users, setUsers] = useState([]);
   const [pendingRequests, setPendingRequests] = useState([]);
+  const [queries, setQueries] = useState([]);
+  const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState("");
+  const [body, setBody] = useState("");
+  const [expandedQueryMail, setExpandedQueryMail] = useState({});
+  const [queryEmail, setQueryEmail] = useState("");
+  const [querySubject, setQuerySubject] = useState("");
+  const [queryBody, setQueryBody] = useState("");
 
   // Fetch all users on component mount
   useEffect(() => {
     fetchAllUsers();
+    fetchActiveQueries();
   }, []);
 
   // Fetch users data
@@ -39,7 +49,22 @@ function AdminHome() {
       setLoadingUsers(false);
     }
   };
-
+  const fetchActiveQueries = async() => {
+    try{
+      setLoadingUsers(true);
+      setError("");
+      const response = await axios.get(getApiUrl("/query/activeQueries"), {
+        withCredentials: true
+      });
+      console.log(response.data);
+      setQueries(response.data || []);
+    }catch(err){
+      console.error("Failed to fetch users:", err);
+      setError(err.response?.data?.message || "Failed to load users. Please try again.");
+    } finally {
+      setLoadingQueries(false);
+    }
+  }
   // Fetch pending requests
   const fetchPendingRequests = async () => {
     try {
@@ -49,7 +74,7 @@ function AdminHome() {
         withCredentials: true
       });
       setPendingRequests(response.data || []);
-    //   console.log("Pending requests:", response.data);
+      //   console.log("Pending requests:", response.data);
     } catch (err) {
       console.error("Failed to fetch pending requests:", err);
       setError(err.response?.data?.message || "Failed to load pending requests. Please try again.");
@@ -99,6 +124,102 @@ function AdminHome() {
       await fetchUserCards(userId);
     }
   };
+
+
+  const toggleMail = (user) => {
+    const isExpanding = !expandedMail[user.id];
+
+    setExpandedMail(prev => ({
+      ...prev,
+      [user.id]: isExpanding
+    }));
+
+    if (isExpanding) {
+      setEmail(user.email);   // auto-fill when expanding
+      setSubject("");
+      setBody("");
+    }
+  };
+
+  const toggleQueryMail = (query) => {
+    const isExpanding = !expandedQueryMail[query.qid];
+
+    setExpandedQueryMail(prev => ({
+      ...prev,
+      [query.qid]: isExpanding
+    }));
+
+    if (isExpanding) {
+      setQueryEmail(query.email);   // auto-fill when expanding
+      setQuerySubject("");
+      setQueryBody("");
+    }
+  };
+
+
+
+  const handleSendMail = async (e) => {
+    e.preventDefault();
+
+    try {
+      setError("");
+
+      await axios.post(
+        getApiUrl("/admin/sendmail"),
+        {
+          to: email,
+          subject,
+          body
+        },
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+
+      setSuccessMessage(`Email sent successfully to ${email}`);
+      setTimeout(() => setSuccessMessage(""), 3000);
+
+      setEmail("");
+      setSubject("");
+      setBody("");
+
+    } catch (err) {
+      setError(err.response?.data || "Failed to send email");
+    }
+  };
+
+  const handleQuerySendMail = async (qid, e) => {
+    e.preventDefault();
+
+    try {
+      setError("");
+
+      await axios.post(
+        getApiUrl(`/query/sendmail?qid=${qid}`),
+        {
+          to: queryEmail,
+          subject: querySubject,
+          body: queryBody
+        },
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+
+      setSuccessMessage(`Email sent successfully to ${queryEmail}`);
+      setTimeout(() => setSuccessMessage(""), 3000);
+
+      setQueryEmail("");
+      setQuerySubject("");
+      setQueryBody("");
+
+    } catch (err) {
+      setError(err.response?.data || "Failed to send email");
+    }
+  };
+
 
   const handleDeactivateCard = async (userId, cid) => {
     if (!window.confirm("Are you sure you want to deactivate this card?")) {
@@ -151,27 +272,6 @@ function AdminHome() {
     }
   };
 
-  const handleSendMail = async (userId, userEmail, userName) => {
-    try {
-      setError("");
-      await axios.post(
-        getApiUrl(`/admin/users/${userId}/sendmail`),
-        {},
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "application/json"
-          }
-        }
-      );
-
-      setSuccessMessage(`Email sent successfully to ${userEmail}!`);
-      setTimeout(() => setSuccessMessage(""), 3000);
-    } catch (err) {
-      console.error("Failed to send email:", err);
-      setError(err.response?.data?.message || "Failed to send email. Please try again.");
-    }
-  };
 
   const handleAcceptRequest = async (cid) => {
     try {
@@ -227,7 +327,7 @@ function AdminHome() {
 
   return (
     <div className="admin-home-container">
-      <Navbar/>
+      <Navbar />
       <div className="admin-home-content">
         <header className="admin-header">
           <h1>Admin Dashboard</h1>
@@ -248,6 +348,12 @@ function AdminHome() {
             onClick={() => setActiveTab("requests")}
           >
             Pending Requests
+          </button>
+          <button
+            className={`tab-button ${activeTab === "queries" ? "active" : ""}`}
+            onClick={() => setActiveTab("queries")}
+          >
+            Queries
           </button>
         </div>
 
@@ -306,11 +412,11 @@ function AdminHome() {
                                 </button>
                                 <button
                                   className="send-mail-btn"
-                                  onClick={() => handleSendMail(user.id, user.email, user.name)}
-                                  title={`Send email to ${user.email}`}
+                                  onClick={() => toggleMail(user)}
                                 >
-                                  ✉ Send Mail
+                                  {expandedMail[user.id] ? "▼ Hide mail" : "Send Mail"}
                                 </button>
+
                                 <button
                                   className="delete-user-btn"
                                   onClick={() => handleDeleteUser(user.id, user.username)}
@@ -370,6 +476,42 @@ function AdminHome() {
                               </td>
                             </tr>
                           )}
+                          {expandedMail[user.id] && (
+                            <tr className="mail-expanded-row">
+                              <td colSpan="8">
+                                <div className="mail-box">
+                                  <form onSubmit={handleSendMail}>
+                                    <input
+                                      type="email"
+                                      placeholder="Enter email"
+                                      value={email}
+                                      onChange={(e) => setEmail(e.target.value)}
+                                      required
+                                    />
+
+                                    <input
+                                      type="text"
+                                      placeholder="Subject"
+                                      value={subject}
+                                      onChange={(e) => setSubject(e.target.value)}
+                                      required
+                                    />
+
+                                    <textarea
+                                      placeholder="Message"
+                                      value={body}
+                                      onChange={(e) => setBody(e.target.value)}
+                                      required
+                                    />
+
+                                    <button type="submit">Send Mail</button>
+                                  </form>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+
+
                         </>
                       ))
                     )}
@@ -414,9 +556,9 @@ function AdminHome() {
                       </tr>
                     ) : (
                       pendingRequests.map((request, x) => (
-                        
+
                         <tr key={x || request.id}>
-                          <td>{x+1 || request.id}</td>
+                          <td>{x + 1 || request.id}</td>
                           <td>{request.user.id || request.uid}</td>
                           <td>{request.user.username || "N/A"}</td>
                           <td>{request.user.name || request.userName || "N/A"}</td>
@@ -456,10 +598,102 @@ function AdminHome() {
             )}
           </div>
         )}
+        {activeTab === "queries" && (
+          <div className="queries-section">
+            <h2>Pending Queries ({queries.length})</h2>
+            {loadingQueries ? (
+              <div className="loading-message">Loading pending queries...</div>
+            ) : (
+              <div className="table-container">
+                <table className="requests-table">
+                  <thead>
+                    <tr>
+                      <th>Query ID</th>
+                      <th>User ID</th>
+                      <th>email</th>
+                      <th>Name</th>
+                      <th>Subject</th>
+                      <th>Message</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {queries.length === 0 ? (
+                      <tr>
+                        <td colSpan="12" className="no-data">
+                          No pending requests
+                        </td>
+                      </tr>
+                    ) : (
+                      queries.map((request, x) => (
+                        <>
+                        <tr key={request.qid}>
+                          <td>{request.qid}</td>
+                          <td>{request.userId}</td>
+                          <td>{request.email || "N/A"}</td>
+                          <td>{request.name || request.userName || "N/A"}</td>
+                          <td>{request.subject}</td>
+                          <td>{request.message || "N/A"}</td>
+                          
+                          <td>
+                            <div className="queries-actions">
+                            <button
+                                  className="send-mail-btn"
+                                  onClick={() => toggleQueryMail(request)}
+                                >
+                                  {expandedQueryMail[request.qid] ? "▼ Hide mail" : "Send Mail"}
+                                </button>
+                              
+                            </div>
+                          </td>
+                        </tr>
+                        {expandedQueryMail[request.qid] && (
+                            <tr className="mail-expanded-row">
+                              <td colSpan="8">
+                                <div className="mail-box">
+                                  <form onSubmit={(e) => handleQuerySendMail(request.qid, e)}>
+                                    <input
+                                      type="email"
+                                      placeholder="Enter email"
+                                      value={queryEmail}
+                                      onChange={(e) => setQueryEmail(e.target.value)}
+                                      required
+                                    />
+
+                                    <input
+                                      type="text"
+                                      placeholder="Subject"
+                                      value={querySubject}
+                                      onChange={(e) => setQuerySubject(e.target.value)}
+                                      required
+                                    />
+
+                                    <textarea
+                                      placeholder="Message"
+                                      value={queryBody}
+                                      onChange={(e) => setQueryBody(e.target.value)}
+                                      required
+                                    />
+
+                                    <button type="submit">Send Mail</button>
+                                  </form>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
       </div>
-      <br/>
-      <br/>
-      <Footer/>
+      <br />
+      <br />
+      <Footer />
     </div>
   );
 }

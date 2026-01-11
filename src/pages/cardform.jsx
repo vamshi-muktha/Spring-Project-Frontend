@@ -162,7 +162,11 @@ function CardForm() {
   return (
     <div className="cardform-container">
       <Navbar/>
+      <br></br>
+      <br></br>
+      <div className = "cardform-content">
       <form className="cardform-form" onSubmit={handleSubmit}>
+      
         <h2>Card Application Form</h2>
 
         {error && <div className="error-message">{error}</div>}
@@ -250,7 +254,11 @@ function CardForm() {
         <div className="back-link">
           <Link to="/home">← Back to Home</Link>
         </div>
+        
       </form>
+      </div>
+      <br></br>
+      <br></br>
       <Footer/>
     </div>
   );

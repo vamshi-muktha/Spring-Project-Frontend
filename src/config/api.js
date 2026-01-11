@@ -15,3 +15,20 @@ const apiConfig = {
 };
 
 export default apiConfig;
+
+
+// // API Configuration
+// export const API_BASE_URL = "http://localhost:9191/securecard";
+
+// // Helper function
+// export const getApiUrl = (endpoint) => {
+//   const cleanEndpoint = endpoint.startsWith("/") ? endpoint.slice(1) : endpoint;
+//   return `${API_BASE_URL}/${cleanEndpoint}`;
+// };
+
+// const apiConfig =  {
+//   API_BASE_URL,
+//   getApiUrl
+// };
+
+// export default apiConfig;

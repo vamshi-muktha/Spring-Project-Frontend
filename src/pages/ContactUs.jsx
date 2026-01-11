@@ -2,7 +2,8 @@ import { useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import "./ContactUs.css";
-
+import axios from "axios";
+import { getApiUrl } from "../config/api";
 function ContactUs() {
   const [formData, setFormData] = useState({
     name: "",
@@ -12,6 +13,8 @@ function ContactUs() {
   });
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -55,42 +58,50 @@ function ContactUs() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (validateForm()) {
-      // In a real application, you would send this to your backend
-      console.log("Form submitted:", formData);
+  
+    if (!validateForm()) return;
+  
+    try {
+      await axios.post(
+        getApiUrl(`/query?subject=${formData.subject}&message=${formData.message}`),
+        {
+         
+        },
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+  
+      setSuccess("Query submitted successfully!");
       setSubmitted(true);
-      setFormData({
-        name: "",
-        email: "",
-        subject: "",
-        message: ""
-      });
-      
-      // Reset submitted message after 5 seconds
-      setTimeout(() => {
-        setSubmitted(false);
-      }, 5000);
+      setFormData({ name: "", email: "", subject: "", message: "" });
+  
+    } catch (err) {
+      setError(err.response?.data || "Failed to submit query");
     }
   };
+  
 
   return (
     <div className="contactus-page">
       <Navbar />
       <div className="contactus-container">
+      {error && <div className="error-message">{error}</div>}
+      {success && <div className="success-message">{success}</div>}
         <div className="contactus-content">
           <h1>Contact Us</h1>
           <p className="contact-intro">
-            Have questions or need assistance? We're here to help! Fill out the form below 
+            Have questions or need assistance? We're here to help! Fill out the form below
             and we'll get back to you as soon as possible.
           </p>
 
           <div className="contact-wrapper">
             <div className="contact-info-section">
               <h2>Get in Touch</h2>
-              
+
               <div className="contact-item">
                 <div className="contact-icon">📧</div>
                 <div>

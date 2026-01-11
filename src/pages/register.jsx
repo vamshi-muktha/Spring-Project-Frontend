@@ -158,8 +158,8 @@ function Register() {
     }
 
     try {
-      await axios.post(
-        getApiUrl("/register"),
+      const res = await axios.post(
+        getApiUrl("/users/register"),
         new URLSearchParams({
           name: formData.name.trim(),
           username: formData.username.trim(),
@@ -177,11 +177,33 @@ function Register() {
         }
       );
 
-      setSuccess("Registration successful! Redirecting to login...");
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 2000);
-
+      console.log(res.data);
+      if(res.data === "Errors"){
+        setError("Fields have some errors.");
+        return;
+      }else if(res.data === "User Exists with given email"){
+        setError("User Exists with given email");
+        return;
+      }else if(res.data === "User Exists with given username"){
+        setError("User Exists with given username");
+        return;
+      }else{
+        setSuccess("Registration successful! Redirecting to Otp...");
+        setTimeout(() => {
+          const params = new URLSearchParams({
+            name: formData.name.trim(),
+            username: formData.username.trim(),
+            email: formData.email.trim(),
+            dob: formData.dob.trim(),
+            password: formData.password,
+            address: formData.address.trim(),
+            mobileNumber: formData.mobileNumber.trim()
+          });
+          
+          window.location.href = `/otp?${params.toString()}`;
+        }, 2000);
+      }
+      
     } catch (err) {
       const errorMessage = err.response?.data?.message || err.response?.data?.error || "Registration failed. Please try again.";
       setError(errorMessage);

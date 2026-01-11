@@ -152,6 +152,43 @@ function Login() {
     }
   };
 
+  // const handleLogin = async (e) => {
+  //   e.preventDefault();
+  //   setError("");
+  
+  //   try {
+  //     const params = new URLSearchParams();
+  //     params.append("username", username);
+  //     params.append("password", password);
+  
+  //     const res = await axios.post(
+  //       getApiUrl("/login"),
+  //       params,
+  //       {
+  //         withCredentials: true,
+  //         headers: {
+  //           "Content-Type": "application/x-www-form-urlencoded"
+  //         }
+  //       }
+  //     );
+  
+  //     // If we are here → login OK → session cookie created
+  //     const user = await axios.get(getApiUrl("/users/getcurruser"), {
+  //       withCredentials: true
+  //     });
+  
+  //     console.log("Logged in user:", user.data);
+  //     window.location.href = "/home";
+  
+  //   } catch (err) {
+  //     if (err.response?.status === 401) {
+  //       setError("Invalid username or password");
+  //     } else {
+  //       setError("Login failed");
+  //     }
+  //   }
+  // };
+  
   return (
     <div className="login-container">
       <div className="login-form-container">
