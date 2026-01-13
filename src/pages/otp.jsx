@@ -5,6 +5,7 @@ import "./Otp.css";
 import { useSearchParams } from "react-router-dom";
 import { getApiUrl } from "../config/api";
 
+
 function Otp() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
@@ -13,6 +14,8 @@ function Otp() {
   // const navigate = useNavigate();
   // const location = useLocation();
   const params = new URLSearchParams(window.location.search);
+  const [verifying, setVerifying] = useState(false);
+
 
 
   const pid = searchParams.get("pid");
@@ -36,6 +39,8 @@ function Otp() {
   };
 
   const handleVerify = async () => {
+    if (verifying) return;
+    setVerifying(true);
     setError("");
 
     const finalOtp = otp.join("");
@@ -100,7 +105,10 @@ function Otp() {
         }
       } catch {
         setError("OTP verification failed");
+      }finally{
+        setVerifying(false);
       }
+      
     }
   };
 
@@ -123,7 +131,17 @@ function Otp() {
           ))}
         </div>
 
-        <button onClick={handleVerify}>Verify OTP</button>
+        <button
+          onClick={handleVerify}
+          disabled={verifying}
+          style={{
+            cursor: verifying ? "not-allowed" : "pointer",
+            opacity: verifying ? 0.6 : 1
+          }}
+        >
+          {verifying ? "Verifying..." : "Verify OTP"}
+        </button>
+
 
         {error && <p className="error-message">{error}</p>}
         {success && <p className="success-message">{success}</p>}

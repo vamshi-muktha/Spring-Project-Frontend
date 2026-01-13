@@ -5,7 +5,7 @@ import { getApiUrl } from "../config/api";
 import "./home.css";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-
+import gsap from "gsap";
 function Home() {
   const [error, setError] = useState("");
   const [paymentStatus, setPaymentStatus] = useState("");
@@ -18,6 +18,9 @@ function Home() {
 
   const [couponCodes, setCouponCodes] = useState({});
   const [discountedAmounts, setDiscountedAmounts] = useState({});
+  const [disablePay, setDisablePay] = useState(false);
+
+
 
 
   useEffect(() => {
@@ -37,6 +40,18 @@ function Home() {
     fetchUser();
   }, []);
 
+  useEffect(() => {
+    
+    gsap.set("#pendulum", { rotate: -15 });
+    gsap.to("#pendulum", {
+      rotate: 15,
+      duration: 1.2,
+      repeat: -1,
+      yoyo: true,
+      ease: "linear",
+    });
+ 
+  }, []);
 
   const handleApplyCoupon = (pid, originalAmount) => {
     const code = couponCodes[pid];
@@ -58,6 +73,8 @@ function Home() {
 
 
   const handlePaymentAction = async (pid, amt, status, cid = null) => {
+    if(disablePay)return;
+    setDisablePay(true);
     setError("");
     setPaymentStatus("");
 
@@ -119,6 +136,8 @@ function Home() {
       setLoadingPayments(false);
     } catch (err) {
       setError(err.response?.data?.message || "Action failed. Please try again.");
+    }finally{
+      setDisablePay(false);
     }
   };
 
@@ -333,6 +352,7 @@ function Home() {
                         {/* <button className= "payment-button-success" onClick={() => handlePaymentAction(payment.pid,parseInt(payment.amount * 0.9), "PAID", selectedCards[payment.pid])}>Pay</button> */}
                         <button
                           className="payment-button-success"
+                          disabled={disablePay}
                           onClick={() =>
                             handlePaymentAction(
                               payment.pid,
@@ -354,9 +374,88 @@ function Home() {
                 </div>
               )}
             </div>
+            
           </section>
         ) : (
+          
           <section className="about-section">
+            <div
+  id="pendulum"
+  style={{
+    position: "absolute",
+    left: "20%",
+    top: "280px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    zIndex: 10,
+    transformOrigin: "50% 0%"
+  }}
+>
+  {/* Top pin */}
+  <div
+    style={{
+      width: "12px",
+      height: "12px",
+      borderRadius: "50%",
+      backgroundColor: "#656565",
+      position: "relative",
+      zIndex: 10
+    }}
+  />
+
+  {/* Hanging section */}
+  <div
+    style={{
+      position: "absolute",
+      top: "8px",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      width: "160px",
+      transformOrigin: "center top"
+    }}
+  >
+    <svg style={{ height: "64px", width: "100%" }}>
+      <line x1="49%" y1="-2" x2="15%" y2="100%" stroke="#656565" strokeWidth="2" />
+      <line x1="51%" y1="-2" x2="85%" y2="100%" stroke="#656565" strokeWidth="2" />
+    </svg>
+
+    <div
+      style={{
+        backgroundColor: "#fb923c",
+        color: "#fff",
+        padding: "8px 24px",
+        borderRadius: "6px",
+        boxShadow: "0 4px 10px rgba(0,0,0,0.15)",
+        position: "relative"
+      }}
+    >
+      <span
+        style={{
+          fontSize: "18px",
+          fontWeight: "700",
+          whiteSpace: "nowrap",
+          textAlign: "center"
+        }}
+      >
+        Use Seure Feel Secure
+      </span>
+
+      {/* dashed border */}
+      <div
+        style={{
+          
+          position: "absolute",
+          inset: 0,
+          border: "2px dashed white",
+          borderRadius: "6px"
+        }}
+      />
+    </div>
+  </div>
+</div>
+
             <div className="about-card">
               <h2 style={{ color: "#ebedf8" }}>
                 About SecureCard

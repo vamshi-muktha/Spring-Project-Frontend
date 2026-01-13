@@ -11,6 +11,8 @@ function Login() {
   const [zipProgress, setZipProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [launch, setLaunch] = useState(false);
+
 
   const updateZipProgress = (e) => {
     const zipTrack = document.querySelector('.zip-track');
@@ -27,6 +29,23 @@ function Login() {
     setIsDragging(true);
     updateZipProgress(e);
   };
+
+  const RocketOverlay = ({ show }) => {
+    if (!show) return null;
+  
+    return (
+      <div style={{
+        position: "fixed",
+        inset: 0,
+        background: "#000",
+        zIndex: 9999,
+        overflow: "hidden"
+      }}>
+        <img src="/rocket.png" className="rocket" alt="rocket" />
+      </div>
+    );
+  };
+  
 
   const handleZipTrackClick = (e) => {
     if (e.target.closest('.zip-slider')) return;
@@ -128,7 +147,13 @@ function Login() {
         // If we can get user info, login was successful
         if (userCheck.status === 200 && userCheck.data) {
           console.log("Login successful, user:", userCheck.data);
-          window.location.href = "/home";
+          // window.location.href = "/home";
+          setLaunch(true);
+
+setTimeout(() => {
+  window.location.href = "/home";
+}, 1800);
+
           return; // Exit before finally block since we're redirecting
         } else {
           setError("Invalid username or password");
@@ -296,6 +321,8 @@ function Login() {
           </div>
         </div>
       </div>
+      <RocketOverlay show={launch} />
+
     </div>
   );
 }

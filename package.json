@@ -11,6 +11,8 @@
     "ajv-keywords": "^3.5.2",
     "axios": "^1.13.2",
     "bootstrap": "^5.3.8",
+    "gasp": "^0.0.2",
+    "gsap": "^3.14.2",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-router-dom": "^7.11.0",
