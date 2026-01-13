@@ -26,6 +26,12 @@ function AdminHome() {
   const [queryEmail, setQueryEmail] = useState("");
   const [querySubject, setQuerySubject] = useState("");
   const [queryBody, setQueryBody] = useState("");
+  const [sendingMail, setSendingMail] = useState(false);
+  const [sendingQueryMail, setSendingQueryMail] = useState({});
+  const [deactivatingCard, setDeactivatingCard] = useState({});
+  const [deletingUser, setDeletingUser] = useState({});
+  const [acceptingRequest, setAcceptingRequest] = useState({});
+  const [rejectingRequest, setRejectingRequest] = useState({});
 
   // Fetch all users on component mount
   useEffect(() => {
@@ -160,9 +166,15 @@ function AdminHome() {
 
   const handleSendMail = async (e) => {
     e.preventDefault();
+    
+    // Prevent multiple submissions
+    if (sendingMail) {
+      return;
+    }
 
     try {
       setError("");
+      setSendingMail(true);
 
       await axios.post(
         getApiUrl("/admin/sendmail"),
@@ -186,14 +198,22 @@ function AdminHome() {
 
     } catch (err) {
       setError(err.response?.data || "Failed to send email");
+    } finally {
+      setSendingMail(false);
     }
   };
 
   const handleQuerySendMail = async (qid, e) => {
     e.preventDefault();
+    
+    // Prevent multiple submissions
+    if (sendingQueryMail[qid]) {
+      return;
+    }
 
     try {
       setError("");
+      setSendingQueryMail(prev => ({ ...prev, [qid]: true }));
 
       await axios.post(
         getApiUrl(`/query/sendmail?qid=${qid}`),
@@ -217,17 +237,25 @@ function AdminHome() {
 
     } catch (err) {
       setError(err.response?.data || "Failed to send email");
+    } finally {
+      setSendingQueryMail(prev => ({ ...prev, [qid]: false }));
     }
   };
 
 
   const handleDeactivateCard = async (userId, cid) => {
+    // Prevent multiple submissions
+    if (deactivatingCard[cid]) {
+      return;
+    }
+    
     if (!window.confirm("Are you sure you want to deactivate this card?")) {
       return;
     }
 
     try {
       setError("");
+      setDeactivatingCard(prev => ({ ...prev, [cid]: true }));
       await axios.put(getApiUrl(`/admin/changeStatus/${cid}/${userId}`), {}, {
         withCredentials: true,
         headers: {
@@ -248,6 +276,8 @@ function AdminHome() {
     } catch (err) {
       console.error("Failed to deactivate card:", err);
       setError(err.response?.data?.message || "Failed to deactivate card. Please try again.");
+    } finally {
+      setDeactivatingCard(prev => ({ ...prev, [cid]: false }));
     }
   };
 
@@ -258,6 +288,7 @@ function AdminHome() {
 
     try {
       setError("");
+      setDeletingUser(prev => ({ ...prev, [userId]: true }));
       await axios.delete(getApiUrl(`/admin/users/${userId}`), {
         withCredentials: true
       });
@@ -269,13 +300,21 @@ function AdminHome() {
     } catch (err) {
       console.error("Failed to delete user:", err);
       setError(err.response?.data?.message || "Failed to delete user. Please try again.");
+    } finally {
+      setDeletingUser(prev => ({ ...prev, [userId]: false }));
     }
   };
 
 
   const handleAcceptRequest = async (cid) => {
+    // Prevent multiple submissions
+    if (acceptingRequest[cid] || rejectingRequest[cid]) {
+      return;
+    }
+    
     try {
       setError("");
+      setAcceptingRequest(prev => ({ ...prev, [cid]: true }));
       await axios.put(
         getApiUrl(`/admin/accept/${cid}`),
         {},
@@ -294,16 +333,24 @@ function AdminHome() {
     } catch (err) {
       console.error("Failed to accept request:", err);
       setError(err.response?.data?.message || "Failed to accept request. Please try again.");
+    } finally {
+      setAcceptingRequest(prev => ({ ...prev, [cid]: false }));
     }
   };
 
   const handleRejectRequest = async (cid) => {
+    // Prevent multiple submissions
+    if (acceptingRequest[cid] || rejectingRequest[cid]) {
+      return;
+    }
+    
     if (!window.confirm("Are you sure you want to reject this request?")) {
       return;
     }
 
     try {
       setError("");
+      setRejectingRequest(prev => ({ ...prev, [cid]: true }));
       await axios.put(
         getApiUrl(`/admin/reject/${cid}`),
         {},
@@ -322,6 +369,8 @@ function AdminHome() {
     } catch (err) {
       console.error("Failed to reject request:", err);
       setError(err.response?.data?.message || "Failed to reject request. Please try again.");
+    } finally {
+      setRejectingRequest(prev => ({ ...prev, [cid]: false }));
     }
   };
 
@@ -420,10 +469,10 @@ function AdminHome() {
                                 <button
                                   className="delete-user-btn"
                                   onClick={() => handleDeleteUser(user.id, user.username)}
-                                  disabled={user.role === "ADMIN"}
+                                  disabled={user.role === "ADMIN" || deletingUser[user.id]}
                                   title={user.role === "ADMIN" ? "Cannot delete admin user" : `Delete user ${user.username}`}
                                 >
-                                  🗑 Delete
+                                  {deletingUser[user.id] ? "Deleting..." : "🗑 Delete"}
                                 </button>
                               </div>
                             </td>
@@ -464,9 +513,9 @@ function AdminHome() {
                                           <button
                                             className="deactivate-card-btn"
                                             onClick={() => handleDeactivateCard(user.id, card.cid)}
-                                            disabled={!card.active}
+                                            disabled={!card.active || deactivatingCard[card.cid]}
                                           >
-                                            {card.active ? "Deactivate" : "Deactivated"}
+                                            {deactivatingCard[card.cid] ? "Deactivating..." : card.active ? "Deactivate" : "Deactivated"}
                                           </button>
                                         </div>
                                       ))}
@@ -504,7 +553,9 @@ function AdminHome() {
                                       required
                                     />
 
-                                    <button type="submit">Send Mail</button>
+                                    <button type="submit" disabled={sendingMail}>
+                                      {sendingMail ? "Sending..." : "Send Mail"}
+                                    </button>
                                   </form>
                                 </div>
                               </td>
@@ -578,14 +629,16 @@ function AdminHome() {
                               <button
                                 className="accept-btn"
                                 onClick={() => handleAcceptRequest(request.cid || request.id)}
+                                disabled={acceptingRequest[request.cid || request.id] || rejectingRequest[request.cid || request.id]}
                               >
-                                ✓ Accept
+                                {acceptingRequest[request.cid || request.id] ? "Accepting..." : "✓ Accept"}
                               </button>
                               <button
                                 className="reject-btn"
                                 onClick={() => handleRejectRequest(request.cid || request.id)}
+                                disabled={acceptingRequest[request.cid || request.id] || rejectingRequest[request.cid || request.id]}
                               >
-                                ✗ Reject
+                                {rejectingRequest[request.cid || request.id] ? "Rejecting..." : "✗ Reject"}
                               </button>
                             </div>
                           </td>
@@ -675,7 +728,9 @@ function AdminHome() {
                                       required
                                     />
 
-                                    <button type="submit">Send Mail</button>
+                                    <button type="submit" disabled={sendingQueryMail[request.qid]}>
+                                      {sendingQueryMail[request.qid] ? "Sending..." : "Send Mail"}
+                                    </button>
                                   </form>
                                 </div>
                               </td>

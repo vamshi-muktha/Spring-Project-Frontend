@@ -10,6 +10,7 @@ function Login() {
   const [error, setError] = useState("");
   const [zipProgress, setZipProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const updateZipProgress = (e) => {
     const zipTrack = document.querySelector('.zip-track');
@@ -56,7 +57,14 @@ function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    
+    // Prevent multiple submissions
+    if (loading) {
+      return;
+    }
+    
     setError("");
+    setLoading(true);
 
     try {
       // First, attempt login
@@ -81,6 +89,7 @@ function Login() {
       console.log("Login response status:", response.status);
       console.log("Login response URL:", response.request?.responseURL);
       console.log("Login response headers:", response.headers);
+      console.log("Login response headers:", response);
 
       // Check the final URL after redirects
       const finalUrl = response.request?.responseURL || "";
@@ -90,6 +99,7 @@ function Login() {
         setError("Invalid username or password");
         setUsername(""); 
         setPassword("");
+        setLoading(false);
         return;
       }
 
@@ -98,6 +108,7 @@ function Login() {
         setError("Invalid username or password");
         setUsername(""); 
         setPassword("");
+        setLoading(false);
         return;
       }
 
@@ -118,13 +129,16 @@ function Login() {
         if (userCheck.status === 200 && userCheck.data) {
           console.log("Login successful, user:", userCheck.data);
           window.location.href = "/home";
+          return; // Exit before finally block since we're redirecting
         } else {
           setError("Invalid username or password");
+          setLoading(false);
         }
       } catch (verifyErr) {
         // If we can't get user info, login failed
         console.error("User verification failed:", verifyErr);
         setError("Invalid username or password");
+        setLoading(false);
       }
 
     } catch (err) {
@@ -134,6 +148,7 @@ function Login() {
       // Network error
       if (!err.response) {
         setError("Network error. Please check if the backend server is running.");
+        setLoading(false);
         return;
       }
 
@@ -149,6 +164,7 @@ function Login() {
           setError(err.response?.data?.message || "Login failed. Please try again.");
         }
       }
+      setLoading(false);
     }
   };
 
@@ -224,7 +240,9 @@ function Login() {
           />
         </div>
 
-        <button type="submit" className="login-button">Login</button>
+        <button type="submit" className="login-button" disabled={loading}>
+          {loading ? "Logging in..." : "Login"}
+        </button>
 
         <div className="divider">or</div>
 

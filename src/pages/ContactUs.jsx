@@ -15,6 +15,7 @@ function ContactUs() {
   const [submitted, setSubmitted] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -60,9 +61,15 @@ function ContactUs() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Prevent multiple submissions
+    if (loading) {
+      return;
+    }
   
     if (!validateForm()) return;
   
+    setLoading(true);
     try {
       await axios.post(
         getApiUrl(`/query?subject=${formData.subject}&message=${formData.message}`),
@@ -81,6 +88,8 @@ function ContactUs() {
   
     } catch (err) {
       setError(err.response?.data || "Failed to submit query");
+    } finally {
+      setLoading(false);
     }
   };
   
@@ -204,8 +213,8 @@ function ContactUs() {
                 {errors.message && <span className="field-error">{errors.message}</span>}
               </div>
 
-              <button type="submit" className="submit-btn">
-                Send Message
+              <button type="submit" className="submit-btn" disabled={loading}>
+                {loading ? "Sending..." : "Send Message"}
               </button>
             </form>
           </div>

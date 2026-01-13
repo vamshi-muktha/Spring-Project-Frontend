@@ -81,7 +81,7 @@
   transform: translate(-50%, -50%);
   font-size: 18px;
   color: #666;
-  user-select: none;
+  /* user-select: none; */
   pointer-events: none;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2));
 }
@@ -210,13 +210,19 @@
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
-.login-button:hover {
+.login-button:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
 }
 
-.login-button:active {
+.login-button:active:not(:disabled) {
   transform: translateY(0);
+}
+
+.login-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .divider {

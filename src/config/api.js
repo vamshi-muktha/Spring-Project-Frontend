@@ -1,7 +1,8 @@
 // API Configuration
 // Base URL for all API endpoints
 // export const API_BASE_URL = 'http://localhost:8088';
-export const API_BASE_URL = process.env.REACT_APP_API;
+// export const API_BASE_URL = process.env.REACT_APP_API;
+export const API_BASE_URL = "https://securecard.onrender.com";
 
 
 // Helper function to construct full API URLs

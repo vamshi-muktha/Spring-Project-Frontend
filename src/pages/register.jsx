@@ -17,6 +17,7 @@ function Register() {
   const [errors, setErrors] = useState({});
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const validateForm = () => {
     const newErrors = {};
@@ -148,6 +149,12 @@ function Register() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    
+    // Prevent multiple submissions
+    if (loading) {
+      return;
+    }
+    
     setError("");
     setSuccess("");
 
@@ -157,6 +164,7 @@ function Register() {
       return;
     }
 
+    setLoading(true);
     try {
       const res = await axios.post(
         getApiUrl("/users/register"),
@@ -180,12 +188,15 @@ function Register() {
       console.log(res.data);
       if(res.data === "Errors"){
         setError("Fields have some errors.");
+        setLoading(false);
         return;
       }else if(res.data === "User Exists with given email"){
         setError("User Exists with given email");
+        setLoading(false);
         return;
       }else if(res.data === "User Exists with given username"){
         setError("User Exists with given username");
+        setLoading(false);
         return;
       }else{
         setSuccess("Registration successful! Redirecting to Otp...");
@@ -219,6 +230,8 @@ function Register() {
         });
         setErrors(backendErrors);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -330,7 +343,9 @@ function Register() {
           {errors.mobileNumber && <span className="field-error">{errors.mobileNumber}</span>}
         </div>
 
-        <button type="submit" className="register-button">Register</button>
+        <button type="submit" className="register-button" disabled={loading}>
+          {loading ? "Registering..." : "Register"}
+        </button>
 
         <div className="divider">or</div>
 

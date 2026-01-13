@@ -149,6 +149,12 @@ function PayBill() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Prevent multiple submissions
+    if (loading) {
+      return;
+    }
+    
     setError("");
 
     if (!validateForm()) {

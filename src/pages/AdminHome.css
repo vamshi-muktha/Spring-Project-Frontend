@@ -289,7 +289,7 @@
   border-radius: 12px;
   font-size: 12px;
   font-weight: 600;
-  backdrop-filter: blur(10px);
+  /* backdrop-filter: blur(10px); */
 }
 
 .card-status {
@@ -404,10 +404,16 @@
   color: white;
 }
 
-.accept-btn:hover {
+.accept-btn:hover:not(:disabled) {
   background: #45a049;
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4);
+}
+
+.accept-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .reject-btn {
@@ -415,10 +421,16 @@
   color: white;
 }
 
-.reject-btn:hover {
+.reject-btn:hover:not(:disabled) {
   background: #da190b;
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(244, 67, 54, 0.4);
+}
+
+.reject-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* No Data */
@@ -480,6 +492,119 @@
   }
 }
 
+/* Mail Form Styles */
+.mail-expanded-row {
+  background: #f9f9f9 !important;
+}
+
+.mail-expanded-row td {
+  padding: 20px !important;
+  border-bottom: 2px solid #ddd;
+}
+
+.mail-box {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.mail-box form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.mail-box input[type="email"],
+.mail-box input[type="text"] {
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.mail-box input[type="email"]:focus,
+.mail-box input[type="text"]:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.mail-box textarea {
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  min-height: 120px;
+  resize: vertical;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.mail-box textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.mail-box button[type="submit"] {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  align-self: flex-start;
+}
+
+.mail-box button[type="submit"]:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.mail-box button[type="submit"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.mail-box button[type="submit"]:disabled::after {
+  content: " ⏳";
+}
+
+/* Loading Spinner for Buttons */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.button-loading {
+  position: relative;
+  color: transparent !important;
+}
+
+.button-loading::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 50%;
+  left: 50%;
+  margin-left: -8px;
+  margin-top: -8px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 0.8s linear infinite;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .admin-home-container {
@@ -517,5 +642,9 @@
 
   .tab-button {
     width: 100%;
+  }
+
+  .mail-box {
+    padding: 20px;
   }
 }

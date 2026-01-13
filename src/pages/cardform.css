@@ -159,13 +159,28 @@
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
-.apply-button:hover {
+/* .apply-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
 }
 
 .apply-button:active {
   transform: translateY(0);
+} */
+
+.apply-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.apply-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.apply-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .back-link {

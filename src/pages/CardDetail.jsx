@@ -19,6 +19,9 @@ function CardDetail() {
   const [showTransactions, setShowTransactions] = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deletingCard, setDeletingCard] = useState(false);
+  const [updatingCardType, setUpdatingCardType] = useState(false);
+  const [togglingStatus, setTogglingStatus] = useState(false);
 
   const fetchCardDetails = useCallback(async () => {
     if (!cid) return;
@@ -97,12 +100,18 @@ function CardDetail() {
   };
 
   const handleDeleteCard = async () => {
+    // Prevent multiple submissions
+    if (deletingCard) {
+      return;
+    }
+    
     if (!deleteConfirm) {
       setDeleteConfirm(true);
       return;
     }
 
     try {
+      setDeletingCard(true);
       await axios.delete(getApiUrl(`/cards/${cid}`), {
         withCredentials: true
       });
@@ -112,11 +121,18 @@ function CardDetail() {
       console.error("Failed to delete card:", err);
       setError(err.response?.data?.message || "Failed to delete card. Please try again.");
       setDeleteConfirm(false);
+      setDeletingCard(false);
     }
   };
 
   const handleUpdateCardType = async (newType) => {
+    // Prevent multiple submissions
+    if (updatingCardType) {
+      return;
+    }
+    
     try {
+      setUpdatingCardType(true);
       await axios.put(
         getApiUrl(`/cards/updateType/${cid}?newType=${newType}`),
         {},
@@ -137,6 +153,8 @@ function CardDetail() {
       } else {
         setError(err.response?.data?.message || "Failed to update card type. Please try again.");
       }
+    } finally {
+      setUpdatingCardType(false);
     }
   };
 
@@ -221,7 +239,13 @@ function CardDetail() {
     );
   }
   const handleToggleCardStatus = async () => {
+    // Prevent multiple submissions
+    if (togglingStatus) {
+      return;
+    }
+    
     try {
+      setTogglingStatus(true);
       await axios.put(getApiUrl(`/cards/changeStatus/${cid}`), {}, {
         withCredentials: true
       });
@@ -230,6 +254,8 @@ function CardDetail() {
     } catch (err) {
       console.error("Failed to toggle card status:", err);
       setError(err.response?.data?.message || "Failed to toggle card status. Please try again.");
+    } finally {
+      setTogglingStatus(false);
     }
   };
   const cardLimit = getCardLimit(card.cardType);
@@ -367,14 +393,16 @@ function CardDetail() {
             <button 
               className="action-btn delete-btn" 
               onClick={handleDeleteCard}
+              disabled={deletingCard}
             >
-              {deleteConfirm ? "⚠️ Confirm Delete" : "🗑️ Delete Card"}
+              {deletingCard ? "Deleting..." : deleteConfirm ? "⚠️ Confirm Delete" : "🗑️ Delete Card"}
             </button>
             <button 
               className="action-btn upgrade-btn" 
               onClick={handleToggleCardStatus}
+              disabled={togglingStatus}
             >
-              Toggle Card Status
+              {togglingStatus ? "Toggling..." : "Toggle Card Status"}
             </button>
           </div>
 
@@ -403,8 +431,9 @@ function CardDetail() {
                   <button 
                     className="upgrade-option-btn platinum"
                     onClick={() => handleUpdateCardType("PLATINUM")}
+                    disabled={updatingCardType}
                   >
-                    Upgrade to Platinum
+                    {updatingCardType ? "Upgrading..." : "Upgrade to Platinum"}
                   </button>
                 )}
                 <button 

@@ -17,6 +17,7 @@ function CardForm() {
   const [errors, setErrors] = useState({});
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const validateForm = () => {
     const newErrors = {};
@@ -69,6 +70,12 @@ function CardForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Prevent multiple submissions
+    if (loading) {
+      return;
+    }
+    
     setError("");
     setSuccess("");
 
@@ -78,6 +85,7 @@ function CardForm() {
       return;
     }
 
+    setLoading(true);
     try {
       const formParams = new URLSearchParams({
         type: formData.type.trim(),
@@ -130,6 +138,7 @@ function CardForm() {
         }, 2000);
       } else {
         setError(response.data?.message || response.data?.error || `Request failed with status ${response.status}`);
+        setLoading(false);
       }
 
     } catch (err) {
@@ -139,6 +148,7 @@ function CardForm() {
       // Network error or request failed
       if (!err.response) {
         setError("Network error. Please check if the backend server is running.");
+        setLoading(false);
         return;
       }
 
@@ -156,6 +166,8 @@ function CardForm() {
         });
         setErrors(backendErrors);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -249,7 +261,9 @@ function CardForm() {
           {errors.cardType && <span className="field-error">{errors.cardType}</span>}
         </div>
 
-        <button type="submit" className="apply-button">Apply</button>
+        <button type="submit" className="apply-button" disabled={loading}>
+          {loading ? "Applying..." : "Apply"}
+        </button>
 
         <div className="back-link">
           <Link to="/home">← Back to Home</Link>

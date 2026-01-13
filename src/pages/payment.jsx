@@ -20,6 +20,11 @@ function Payment() {
   const handleSecureCardPayment = async (e) => {
     e.preventDefault();
     
+    // Prevent multiple submissions
+    if (loading) {
+      return;
+    }
+    
     if (!amount || parseFloat(amount) <= 0) {
       setError("Please enter a valid amount");
       return;
