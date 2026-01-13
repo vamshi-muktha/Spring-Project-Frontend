@@ -67,7 +67,7 @@
 .nav-link:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-  background: #f8f9fa;
+  background: #090b0c;
 }
 
 .nav-button {
@@ -84,7 +84,7 @@
 .nav-button:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-  background: #f8f9fa;
+  background: #06090b;
 }
 
 .pending-payments {
@@ -162,6 +162,21 @@
 
 .payment-form {
   margin-top: 20px;
+}
+
+.payment-button-success:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.payment-button-success:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.payment-button-success:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .pay-button {

@@ -70,14 +70,28 @@
   font-size: 14px;
 }
 
+/* Ultra simple footer for mobile */
 @media (max-width: 768px) {
   .footer-container {
-    grid-template-columns: 1fr;
-    gap: 30px;
+    display: none;
+  }
+
+  .footer {
+    padding: 15px 10px;
     text-align: center;
   }
 
-  .footer-section ul li a:hover {
-    transform: none;
+  .footer-bottom {
+    font-size: 12px;
+  }
+
+  .footer::before {
+    content: "CardHub — Secure Card Management";
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
   }
 }
+
+

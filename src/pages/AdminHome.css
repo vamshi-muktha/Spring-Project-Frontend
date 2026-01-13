@@ -289,7 +289,7 @@
   border-radius: 12px;
   font-size: 12px;
   font-weight: 600;
-  /* backdrop-filter: blur(10px); */
+  backdrop-filter: blur(10px);
 }
 
 .card-status {

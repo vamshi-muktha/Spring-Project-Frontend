@@ -16,6 +16,10 @@ function Home() {
   const [selectedCards, setSelectedCards] = useState({});
   const [user, setUser] = useState(null);
 
+  const [couponCodes, setCouponCodes] = useState({});
+  const [discountedAmounts, setDiscountedAmounts] = useState({});
+
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -33,9 +37,27 @@ function Home() {
     fetchUser();
   }, []);
 
-  
 
-  const handlePaymentAction = async (pid,amt, status, cid = null) => {
+  const handleApplyCoupon = (pid, originalAmount) => {
+    const code = couponCodes[pid];
+
+    if (code === "SECURE10") {
+      const discounted = Math.floor(originalAmount * 0.9);
+      setDiscountedAmounts(prev => ({
+        ...prev,
+        [pid]: discounted
+      }));
+    } else {
+      alert("Invalid Coupon Code");
+      setDiscountedAmounts(prev => ({
+        ...prev,
+        [pid]: originalAmount
+      }));
+    }
+  };
+
+
+  const handlePaymentAction = async (pid, amt, status, cid = null) => {
     setError("");
     setPaymentStatus("");
 
@@ -44,7 +66,7 @@ function Home() {
       setError("Please select a card before making payment.");
       return;
     }
-    if(status === "REJECTED"){
+    if (status === "REJECTED") {
       window.alert("Payment rejected successfully!");
     }
 
@@ -52,10 +74,10 @@ function Home() {
       let url = `${getApiUrl("/payment/payNow")}?pid=${pid}&status=${status}&amt=${amt}`;
       if (cid !== null && cid !== undefined) {
         url += `&cid=${cid}`;
-    } else {
+      } else {
         url += `&cid=-1`;
-    }
-    
+      }
+
 
       const ress = await axios.put(
         url,
@@ -68,7 +90,7 @@ function Home() {
         }
       );
       console.log("ress", ress.data);
-      if(ress.data === "Amount low in that card try with another card"){
+      if (ress.data === "Amount low in that card try with another card") {
         setError(ress.data);
         return;
       }
@@ -78,19 +100,19 @@ function Home() {
           setError("User details not loaded. Please try again.");
           return;
         }
-      
+
         window.location.href =
           `/otp?pid=${pid}&amount=${amt}&cid=${cid}&email=${encodeURIComponent(user.email)}&status=${status}`;
-      
+
         return;
       }
-       
+
       // setPaymentStatus(
       //   status === "PAID" 
       //     ? "Payment processed successfully!" 
       //     : "Payment rejected successfully!"
       // );
-      
+
       // Refresh pending payments list
       setLoadingPayments(true);
       await fetchPendingPayments();
@@ -157,7 +179,7 @@ function Home() {
       );
 
       const userId = userResponse.data?.id;
-      
+
       if (!userId) {
         setError("Unable to get user information");
         return;
@@ -190,26 +212,26 @@ function Home() {
 
   return (
     <div className="home-container">
-      <Navbar/>
+      <Navbar />
       <div className="home-content">
         <header className="home-header">
           <h1>Welcome to SecureCard</h1>
           <p className="home-subtitle">Your trusted digital payment and card management platform</p>
         </header>
-        
+
         <nav className="home-nav">
-        {user && user.role === "ADMIN" &&
-          <Link to="/adminhome" className="nav-link">
-            Admin Dashboard
-          </Link>
-        }
+          {user && user.role === "ADMIN" &&
+            <Link to="/adminhome" className="nav-link">
+              Admin Dashboard
+            </Link>
+          }
           <Link to="/cardform" className="nav-link">
             Apply New Card
           </Link>
           <Link to="/cards/mycards" className="nav-link">
             See My Cards
           </Link>
-          <button 
+          <button
             onClick={handleSeePendingPayments}
             className="nav-link nav-button"
             disabled={loadingPayments}
@@ -221,7 +243,7 @@ function Home() {
         {showPendingPayments ? (
           <section className="pending-payments">
             <h2>Pending Payments</h2>
-            
+
             {error && <div className="error-message">{error}</div>}
             {paymentStatus && <div className="success-message">{paymentStatus}</div>}
 
@@ -241,7 +263,7 @@ function Home() {
                     <div key={payment.pid || index} className="payment-item">
                       <div className="payment-info">
                         <p><strong>Order ID:</strong> {payment.orderId || `ORD${index + 1}`}</p>
-                        <p>
+                        {/* <p>
                           <strong>Amount:</strong>{" "}
                           <span style={{ textDecoration: "line-through", color: "#888" }}>
                             ₹{parseInt(payment.amount) || "N/A"}
@@ -254,28 +276,79 @@ function Home() {
                           <small style={{ color: "#ff5722" }}>
                             🎉 10% OFF for using Secure Card
                           </small>
+                        </p> */}
+
+                        <p>
+                          <strong>Amount:</strong>{" "}
+                          <span style={{ textDecoration: discountedAmounts[payment.pid] ? "line-through" : "none", color: "#888" }}>
+                            ₹{parseInt(payment.amount)}
+                          </span>
+
+                          {discountedAmounts[payment.pid] && (
+                            <span style={{ color: "#28a745", fontWeight: "bold", marginLeft: "8px" }}>
+                              ₹{discountedAmounts[payment.pid]}
+                            </span>
+                          )}
+                          <br />
+                          {discountedAmounts[payment.pid] && <small style={{ color: "#ff5722" }}>
+                            🎉 10% OFF for using Secure Card
+                          </small>}
                         </p>
+                        <div style={{ marginTop: "8px" }}>
+                          <input
+                            type="text"
+                            placeholder="Enter coupon"
+                            value={couponCodes[payment.pid] || ""}
+                            onChange={(e) =>
+                              setCouponCodes(prev => ({
+                                ...prev,
+                                [payment.pid]: e.target.value
+                              }))
+                            }
+                          />
+                          <button
+                            style={{ marginLeft: "8px" }}
+                            onClick={() => handleApplyCoupon(payment.pid, parseInt(payment.amount))}
+                          >
+                            Apply
+                          </button>
+                        </div>
+
 
                         <p><strong>Status:</strong> <span className="status-pending">PENDING</span></p>
                         {payment.pid && <p><strong>Payment ID:</strong> {payment.pid}</p>}
                         <p><strong>pay using : </strong>
-                        <select 
-                        name={`card-${payment.pid || index}`} 
-                        id={`card-${payment.pid || index}`}
-                        value={selectedCards[payment.pid] || ""}
-                        onChange={(e) => handleCardSelection(payment.pid, e.target.value)}
-                      >
-                        <option value="">Select a card</option>
-                        {activeCards.map((card) => (
-                          <option key={card.cid} value={card.cid}>{card.cardNumber}</option>
-                        ))}
-                      </select>
-                      </p>
-                      <button className= "payment-button-success" onClick={() => handlePaymentAction(payment.pid,parseInt(payment.amount * 0.9), "PAID", selectedCards[payment.pid])}>Pay</button>
-                      <button className= "payment-button-danger" onClick={() => handlePaymentAction(payment.pid,parseInt(payment.amount * 0.9), "REJECTED")}>Reject</button>
-                      
+                          <select
+                            name={`card-${payment.pid || index}`}
+                            id={`card-${payment.pid || index}`}
+                            value={selectedCards[payment.pid] || ""}
+                            onChange={(e) => handleCardSelection(payment.pid, e.target.value)}
+                          >
+                            <option value="">Select a card</option>
+                            {activeCards.map((card) => (
+                              <option key={card.cid} value={card.cid}>{card.cardNumber}</option>
+                            ))}
+                          </select>
+                        </p>
+                        {/* <button className= "payment-button-success" onClick={() => handlePaymentAction(payment.pid,parseInt(payment.amount * 0.9), "PAID", selectedCards[payment.pid])}>Pay</button> */}
+                        <button
+                          className="payment-button-success"
+                          onClick={() =>
+                            handlePaymentAction(
+                              payment.pid,
+                              discountedAmounts[payment.pid] || parseInt(payment.amount),
+                              "PAID",
+                              selectedCards[payment.pid]
+                            )
+                          }
+                        >
+                          Pay
+                        </button>
+
+                        <button className="payment-button-danger" onClick={() => handlePaymentAction(payment.pid, parseInt(payment.amount * 0.9), "REJECTED")}>Reject</button>
+
                       </div>
-                     
+
                     </div>
                   ))}
                 </div>
@@ -285,16 +358,61 @@ function Home() {
         ) : (
           <section className="about-section">
             <div className="about-card">
-            <h2 style={{ color: "#ebedf8" }}>
-  About SecureCard
-</h2>
+              <h2 style={{ color: "#ebedf8" }}>
+                About SecureCard
+              </h2>
 
 
               <p style={{ color: "#ebedf8" }} className="about-description">
-                SecureCard is a comprehensive digital payment and card management platform designed 
-                to provide you with secure, convenient, and efficient financial services. Manage 
+                SecureCard is a comprehensive digital payment and card management platform designed
+                to provide you with secure, convenient, and efficient financial services. Manage
                 your cards, process payments, and track transactions all in one place.
               </p>
+            </div>
+            <div
+              onClick={() => window.location.href = "/payment"}
+              style={{
+                width: "100%",
+                // marginLeft:"15rem",
+                paddingleft: "16px",
+                borderRadius: "12px",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                cursor: "pointer",
+                border: "1px solid #e0e0e0",
+                transition: "0.3s",
+                fontFamily: "Arial",
+                background: "linear-gradient(135deg, #667eea, #764ba2)",
+
+                color: "#ebedf8"
+              }}
+              onMouseEnter={e => e.currentTarget.style.transform = "scale(1.04)"}
+              onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+            >
+
+              <div style={{display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
+                <img
+                  src="https://logos-world.net/wp-content/uploads/2020/11/Flipkart-Logo.png"
+                  alt="Flipkart"
+                  style={{ height: "30px" }}
+                />
+
+                <strong style={{ fontSize: "18px" }}>Flipkart</strong>
+              </div>
+              <div>
+                <p style={{  textAlign: "center", margin: "12px 0 6px", fontSize: "14px", color: "#555" }}>
+                  Pay securely using
+                </p>
+
+                <h3 style={{textAlign: "center",  margin: "0", color: "#FFF" }}>
+                  Secure Card
+                </h3>
+
+                <p style={{ textAlign: "center",  marginTop: "8px", fontSize: "13px", color: "#000" }}>
+                  🎉 Get 10% instant discount
+                </p>
+              </div>
+
+
             </div>
 
             <div className="features-grid">
@@ -328,8 +446,9 @@ function Home() {
         {/* <form onSubmit={handleLogout} className="logout-form">
           <button type="submit" className="logout-button">Logout</button>
         </form> */}
+        <div></div>
       </div>
-      <Footer/>
+      <Footer />
     </div>
   );
 }
