@@ -78,7 +78,9 @@ function Navbar() {
       <Link to="/aboutus" className={`navbar-link ${isActive("/aboutus")}`}>About Us</Link>
       <Link to="/contactus" className={`navbar-link ${isActive("/contactus")}`}>Contact Us</Link>
     </div>
-    <div></div>
+    <div>
+      <Link to="/login" className={`navbar-link ${isActive("/logout")}`}>Logout</Link>
+    </div>
   </div>
 </nav>
 
